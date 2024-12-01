@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pergunta Rapida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        #scratch-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            background-color: #ccc;
+            overflow: hidden;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #scratch-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .question-section {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pergunta Rapida</h1>
+        <div id="scratch-area">
+            <img id="scratch-image" src="cho.jpg" alt="Imagem Raspadinha">
+            <canvas id="scratch-cover"></canvas>
+        </div>
+        <div class="question-section">
+            <p id="question"></p>
+            <button onclick="answerQuestion(true)">Coca-cola</button>
+            <button onclick="answerQuestion(false)">Chocolate</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "O que é que você mais gosta?", answer: false },
+            
+        ];
+
+        let currentQuestion = 0;
+        let attemptsLeft = 10;
+
+        const canvas = document.getElementById('scratch-cover');
+        const ctx = canvas.getContext('2d');
+        const messageEl = document.getElementById('message');
+        const questionEl = document.getElementById('question');
+
+        const loadQuestion = () => {
+            if (currentQuestion < questions.length) {
+                questionEl.textContent = questions[currentQuestion].question;
+            } else {
+                questionEl.textContent = "Aguarde as Instruções da Segunda Etapa !!!";
+            }
+        };
+
+        const answerQuestion = (userAnswer) => {
+            if (currentQuestion < questions.length) {
+                const isCorrect = questions[currentQuestion].answer === userAnswer;
+                if (isCorrect) {
+                    messageEl.textContent = "Resposta correta! Raspe a imagem.";
+                    attemptsLeft--;
+                } else {
+                    messageEl.textContent = "Resposta incorreta. Tente novamente.";
+                }
+                currentQuestion++;
+                loadQuestion();
+            }
+        };
+
+        // Configurar o canvas para funcionar como máscara raspável
+        const setupCanvas = () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.fillStyle = 'gray';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (attemptsLeft > 0 && e.buttons === 1) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    ctx.clearRect(x - 15, y - 15, 30, 30);
+                }
+            });
+        };
+
+        // Inicializar
+        setupCanvas();
+        loadQuestion();
+    </script>
+</body>
+</html>
