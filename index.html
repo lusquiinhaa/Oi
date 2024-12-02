@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pergunta Rapida</title>
+    <title>Raspadinha Interativa</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,21 +21,11 @@
             height: 300px;
             margin: 20px auto;
             background-color: #ccc;
-            overflow: hidden;
         }
         canvas {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        #scratch-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
         }
         .question-section {
             margin-top: 20px;
@@ -55,23 +45,25 @@
 </head>
 <body>
     <div class="container">
-        <h1>Pergunta Rapida</h1>
+        <h1>Raspadinha Interativa</h1>
         <div id="scratch-area">
-            <img id="scratch-image" src="cho.jpg" alt="Imagem Raspadinha">
-            <canvas id="scratch-cover"></canvas>
+            <img id="scratch-image" src="cho.jpg" alt="Imagem Raspadinha" width="300" height="300">
+            <canvas id="scratch-cover" width="300" height="300"></canvas>
         </div>
         <div class="question-section">
             <p id="question"></p>
-            <button onclick="answerQuestion(true)">Coca-cola</button>
-            <button onclick="answerQuestion(false)">Chocolate</button>
+            <button onclick="answerQuestion(true)">Verdadeiro</button>
+            <button onclick="answerQuestion(false)">Falso</button>
         </div>
         <div id="message"></div>
     </div>
 
     <script>
         const questions = [
-            { question: "O que é que você mais gosta?", answer: false },
-            
+            { question: "O céu é azul?", answer: true },
+            { question: "2 + 2 = 5?", answer: false },
+            { question: "A água ferve a 100°C no nível do mar?", answer: true },
+            { question: "O sol nasce no oeste?", answer: false },
         ];
 
         let currentQuestion = 0;
@@ -79,14 +71,49 @@
 
         const canvas = document.getElementById('scratch-cover');
         const ctx = canvas.getContext('2d');
+        const image = document.getElementById('scratch-image');
         const messageEl = document.getElementById('message');
         const questionEl = document.getElementById('question');
+
+        // Configuração inicial do canvas
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Função para raspagem
+        const scratch = (x, y) => {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            ctx.fill();
+        };
+
+        // Eventos para mouse
+        canvas.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1 && attemptsLeft > 0) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                scratch(x, y);
+            }
+        });
+
+        // Eventos para toque (dispositivos móveis)
+        canvas.addEventListener('touchmove', (e) => {
+            if (attemptsLeft > 0) {
+                e.preventDefault(); // Impede o scroll da página ao tocar
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                scratch(x, y);
+            }
+        });
 
         const loadQuestion = () => {
             if (currentQuestion < questions.length) {
                 questionEl.textContent = questions[currentQuestion].question;
             } else {
-                questionEl.textContent = "Aguarde as Instruções da Segunda Etapa !!!";
+                questionEl.textContent = "Você completou todas as perguntas!";
             }
         };
 
@@ -94,7 +121,7 @@
             if (currentQuestion < questions.length) {
                 const isCorrect = questions[currentQuestion].answer === userAnswer;
                 if (isCorrect) {
-                    messageEl.textContent = "Resposta correta! Raspe a imagem.";
+                    messageEl.textContent = "Resposta correta! Raspe um pedaço da imagem.";
                     attemptsLeft--;
                 } else {
                     messageEl.textContent = "Resposta incorreta. Tente novamente.";
@@ -104,26 +131,6 @@
             }
         };
 
-        // Configurar o canvas para funcionar como máscara raspável
-        const setupCanvas = () => {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            ctx.fillStyle = 'gray';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            canvas.addEventListener('mousemove', (e) => {
-                if (attemptsLeft > 0 && e.buttons === 1) {
-                    const rect = canvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    ctx.clearRect(x - 15, y - 15, 30, 30);
-                }
-            });
-        };
-
-        // Inicializar
-        setupCanvas();
         loadQuestion();
     </script>
 </body>
