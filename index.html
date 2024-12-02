@@ -45,25 +45,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Raspadinha Interativa</h1>
+        <h1>Pergunta Rapida</h1>
         <div id="scratch-area">
             <img id="scratch-image" src="cho.jpg" alt="Imagem Raspadinha" width="300" height="300">
             <canvas id="scratch-cover" width="300" height="300"></canvas>
         </div>
         <div class="question-section">
             <p id="question"></p>
-            <button onclick="answerQuestion(true)">Verdadeiro</button>
-            <button onclick="answerQuestion(false)">Falso</button>
+            <button onclick="answerQuestion(true)">Coca-Cola</button>
+            <button onclick="answerQuestion(false)">Chocolate</button>
         </div>
         <div id="message"></div>
     </div>
 
     <script>
         const questions = [
-            { question: "O céu é azul?", answer: true },
-            { question: "2 + 2 = 5?", answer: false },
-            { question: "A água ferve a 100°C no nível do mar?", answer: true },
-            { question: "O sol nasce no oeste?", answer: false },
+            { question: "O que você mais gosta?", answer: false },
+
         ];
 
         let currentQuestion = 0;
@@ -113,7 +111,7 @@
             if (currentQuestion < questions.length) {
                 questionEl.textContent = questions[currentQuestion].question;
             } else {
-                questionEl.textContent = "Você completou todas as perguntas!";
+                questionEl.textContent = "Aguarde a segunda Etapa !!!";
             }
         };
 
@@ -121,7 +119,7 @@
             if (currentQuestion < questions.length) {
                 const isCorrect = questions[currentQuestion].answer === userAnswer;
                 if (isCorrect) {
-                    messageEl.textContent = "Resposta correta! Raspe um pedaço da imagem.";
+                    messageEl.textContent = "Raspe a imagem.";
                     attemptsLeft--;
                 } else {
                     messageEl.textContent = "Resposta incorreta. Tente novamente.";
