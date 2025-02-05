@@ -1,135 +1,114 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raspadinha Interativa</title>
+    <title>Lista de Compras Inteligente</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            margin-top: 20px;
-        }
-        #scratch-area {
-            position: relative;
-            width: 300px;
-            height: 300px;
+            max-width: 800px;
             margin: 20px auto;
-            background-color: #ccc;
+            padding: 20px;
         }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .question-section {
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 10px;
-            cursor: pointer;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
-        #message {
-            margin-top: 20px;
+        th {
+            background-color: #f2f2f2;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 4px;
+        }
+        .total-row {
             font-weight: bold;
-            color: green;
+            background-color: #e6e6e6;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Pergunta Rapida</h1>
-        <div id="scratch-area">
-            <img id="scratch-image" src="cho.jpg" alt="Imagem Raspadinha" width="300" height="300">
-            <canvas id="scratch-cover" width="300" height="300"></canvas>
-        </div>
-        <div class="question-section">
-            <p id="question"></p>
-            <button onclick="answerQuestion(true)">Coca-Cola</button>
-            <button onclick="answerQuestion(false)">Chocolate</button>
-        </div>
-        <div id="message"></div>
-    </div>
+    <h1>Lista de Compras</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Total Item</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Itens da lista -->
+            <tr>
+                <td>Peito frango</td>
+                <td><input type="number" min="0" class="quantity"></td>
+                <td><input type="number" min="0" step="0.01" class="price"></td>
+                <td class="total">R$ 0.00</td>
+            </tr>
+            <!-- Repetir o padrão acima para cada item -->
+            <!-- [INSERIR TODOS OS ITENS AQUI] -->
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="3">Total Geral</td>
+                <td id="grand-total">R$ 0.00</td>
+            </tr>
+        </tfoot>
+    </table>
 
     <script>
-        const questions = [
-            { question: "O que você mais gosta?", answer: false },
-
+        // Adicione todos os itens da lista aqui
+        const items = [
+            "Cloro","Desinfetante","gielte","Pinho","Sabonete","Sabonete íntimo","pasta Dente","Esponja",
+            "papel toalha","Shampoo","Condicionador","Sabão em pó","Desodorante","Desodorante","Desodorante",
+            "Absorvente","Cotonete","veja","macarrao","Alho","molho de tomate","Creme de leite",
+            "Oleo","Arroz","Feijao","ovo","Tomate","ketchup","Queijo Ralado","Bacon","Tipo Calebrasa","Celobola",
+            "Danone","Danone","Danone","Danone","Danone","Danone","bolacha","bolacha","bolacha","bolacha","bolacha",
+            "Frango","Frango","Frango","Frango","Sacola"
         ];
 
-        let currentQuestion = 0;
-        let attemptsLeft = 10;
-
-        const canvas = document.getElementById('scratch-cover');
-        const ctx = canvas.getContext('2d');
-        const image = document.getElementById('scratch-image');
-        const messageEl = document.getElementById('message');
-        const questionEl = document.getElementById('question');
-
-        // Configuração inicial do canvas
-        ctx.fillStyle = 'gray';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Função para raspagem
-        const scratch = (x, y) => {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.beginPath();
-            ctx.arc(x, y, 15, 0, 2 * Math.PI);
-            ctx.fill();
-        };
-
-        // Eventos para mouse
-        canvas.addEventListener('mousemove', (e) => {
-            if (e.buttons === 1 && attemptsLeft > 0) {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                scratch(x, y);
-            }
+        // Preencher a tabela com os itens
+        const tbody = document.querySelector('tbody');
+        
+        items.forEach(item => {
+            const row = `
+                <tr>
+                    <td>${item}</td>
+                    <td><input type="number" min="0" class="quantity"></td>
+                    <td><input type="number" min="0" step="0.01" class="price"></td>
+                    <td class="total">R$ 0.00</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
         });
 
-        // Eventos para toque (dispositivos móveis)
-        canvas.addEventListener('touchmove', (e) => {
-            if (attemptsLeft > 0) {
-                e.preventDefault(); // Impede o scroll da página ao tocar
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                scratch(x, y);
-            }
+        // Função para calcular totais
+        function calculateTotals() {
+            let grandTotal = 0;
+            
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const qtd = parseFloat(row.querySelector('.quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const total = qtd * price;
+                
+                row.querySelector('.total').textContent = `R$ ${total.toFixed(2)}`;
+                grandTotal += total;
+            });
+
+            document.getElementById('grand-total').textContent = `R$ ${grandTotal.toFixed(2)}`;
+        }
+
+        // Adicionar event listeners
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateTotals);
         });
-
-        const loadQuestion = () => {
-            if (currentQuestion < questions.length) {
-                questionEl.textContent = questions[currentQuestion].question;
-            } else {
-                questionEl.textContent = "Aguarde a segunda Etapa !!!";
-            }
-        };
-
-        const answerQuestion = (userAnswer) => {
-            if (currentQuestion < questions.length) {
-                const isCorrect = questions[currentQuestion].answer === userAnswer;
-                if (isCorrect) {
-                    messageEl.textContent = "Raspe a imagem.";
-                    attemptsLeft--;
-                } else {
-                    messageEl.textContent = "Resposta incorreta. Tente novamente.";
-                }
-                currentQuestion++;
-                loadQuestion();
-            }
-        };
-
-        loadQuestion();
     </script>
 </body>
 </html>
