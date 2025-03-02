@@ -201,6 +201,7 @@
             <div>
                 <span>Itens: <span id="total-items">0</span></span>
                 <span style="margin-left: 15px;">Comprados: <span id="purchased-items">0</span></span>
+                <span style="margin-left: 15px;">Total: <span id="stats-total">R$ 0.00</span></span>
             </div>
             <button id="download-btn">📄 PDF</button>
         </div>
@@ -273,7 +274,6 @@
                 .filter(item => 
                     (currentFilter === 'Todas' || item.category === currentFilter) &&
                     item.name.toLowerCase().includes(currentSearch)
-                )
                 .sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
             let currentCategory = null;
@@ -384,14 +384,19 @@
 
         function updateTotal() {
             const total = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-            document.getElementById('grand-total').textContent = `R$ ${total.toFixed(2)}`;
-            document.getElementById('stats-total').textContent = `R$ ${total.toFixed(2)}`;
+            const grandTotalElement = document.getElementById('grand-total');
+            const statsTotalElement = document.getElementById('stats-total');
+            
+            if(grandTotalElement) grandTotalElement.textContent = `R$ ${total.toFixed(2)}`;
+            if(statsTotalElement) statsTotalElement.textContent = `R$ ${total.toFixed(2)}`;
         }
 
         function updateStats() {
-            document.getElementById('total-items').textContent = items.length;
-            const purchasedCount = items.filter(item => item.purchased).length;
-            document.getElementById('purchased-items').textContent = purchasedCount;
+            const totalItemsElement = document.getElementById('total-items');
+            const purchasedItemsElement = document.getElementById('purchased-items');
+            
+            if(totalItemsElement) totalItemsElement.textContent = items.length;
+            if(purchasedItemsElement) purchasedItemsElement.textContent = items.filter(item => item.purchased).length;
         }
 
         function saveAndUpdate() {
