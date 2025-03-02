@@ -6,35 +6,85 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 20px auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px 15px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
-        th {
-            background-color: #f2f2f2;
+
+        .category-header {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
         }
+
+        .purchased {
+            text-decoration: line-through;
+            opacity: 0.6;
+            background-color: #f9f9f9;
+        }
+
         input[type="number"] {
             width: 80px;
-            padding: 4px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
+
+        input:focus {
+            outline: 2px solid #4CAF50;
+        }
+
         .total-row {
+            background-color: #e8f5e9;
             font-weight: bold;
-            background-color: #e6e6e6;
+        }
+
+        .add-item {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .add-item input, .add-item select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <h1>Lista de Compras</h1>
+    <h1>Lista de Compras Inteligente</h1>
+    
     <table>
         <thead>
             <tr>
@@ -44,16 +94,7 @@
                 <th>Total Item</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Itens da lista -->
-            <tr>
-                <td>Peito frango</td>
-                <td><input type="number" min="0" class="quantity"></td>
-                <td><input type="number" min="0" step="0.01" class="price"></td>
-                <td class="total">R$ 0.00</td>
-            </tr>
-            <!-- Repetir o padrão acima para cada item -->
-            <!-- [INSERIR TODOS OS ITENS AQUI] -->
+        <tbody id="list-body">
         </tbody>
         <tfoot>
             <tr class="total-row">
@@ -63,52 +104,140 @@
         </tfoot>
     </table>
 
+    <div class="add-item">
+        <h2>Adicionar Novo Item</h2>
+        <input type="text" id="new-item-name" placeholder="Nome do item">
+        <select id="new-item-category">
+            <option value="Limpeza">Limpeza</option>
+            <option value="Higiene">Higiene</option>
+            <option value="Mercearia">Mercearia</option>
+            <option value="Outros">Outros</option>
+        </select>
+        <button onclick="addNewItem()">Adicionar</button>
+    </div>
+
     <script>
-        // Adicione todos os itens da lista aqui
-        const items = [
-            "Cloro","Desinfetante","gielte","Pinho","Sabonete","Sabonete íntimo","pasta Dente","Esponja",
-            "papel toalha","Shampoo","Condicionador","Sabão em pó","Desodorante","Desodorante","Desodorante",
-            "Absorvente","Cotonete","veja","macarrao","Alho","molho de tomate","Creme de leite",
-            "Oleo","Arroz","Feijao","ovo","Tomate","ketchup","Queijo Ralado","Bacon","Tipo Calebrasa","Celobola",
-            "Danone","Danone","Danone","Danone","Danone","Danone","bolacha","bolacha","bolacha","bolacha","bolacha",
-            "Frango","Frango","Frango","Frango","Sacola"
+        const categoryOrder = ["Limpeza", "Higiene", "Mercearia", "Outros"];
+        
+        let items = JSON.parse(localStorage.getItem('shoppingList')) || [
+            // Limpeza
+            { name: "Cloro", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Desinfetante", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Sabão em pó", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Esponja", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Papel toalha", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Veja", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            
+            // Higiene
+            { name: "Sabonete", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Sabonete íntimo", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Pasta de dente", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Shampoo", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Condicionador", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Desodorante", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            
+            // Mercearia
+            { name: "Arroz", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Feijão", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Óleo", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Macarrão", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Molho de tomate", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Creme de leite", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Ovos", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Cebola", category: "Mercearia", quantity: 0, price: 0, purchased: false },
+            { name: "Alho", category: "Mercearia", quantity: 0, price: 0, purchased: false }
         ];
 
-        // Preencher a tabela com os itens
-        const tbody = document.querySelector('tbody');
-        
-        items.forEach(item => {
-            const row = `
-                <tr>
-                    <td>${item}</td>
-                    <td><input type="number" min="0" class="quantity"></td>
-                    <td><input type="number" min="0" step="0.01" class="price"></td>
-                    <td class="total">R$ 0.00</td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-        });
+        function renderTable() {
+            const tbody = document.getElementById('list-body');
+            tbody.innerHTML = '';
+            let currentCategory = null;
 
-        // Função para calcular totais
-        function calculateTotals() {
-            let grandTotal = 0;
-            
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const qtd = parseFloat(row.querySelector('.quantity').value) || 0;
-                const price = parseFloat(row.querySelector('.price').value) || 0;
-                const total = qtd * price;
-                
-                row.querySelector('.total').textContent = `R$ ${total.toFixed(2)}`;
-                grandTotal += total;
+            items.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
+
+            items.forEach((item, index) => {
+                if (item.category !== currentCategory) {
+                    currentCategory = item.category;
+                    tbody.innerHTML += `
+                        <tr class="category-header">
+                            <td colspan="4">${currentCategory}</td>
+                        </tr>
+                    `;
+                }
+
+                const row = document.createElement('tr');
+                row.dataset.index = index;
+                if (item.purchased) row.classList.add('purchased');
+
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="purchased" ${item.purchased ? 'checked' : ''}>
+                        ${item.name}
+                    </td>
+                    <td><input type="number" class="quantity" min="0" value="${item.quantity}"></td>
+                    <td><input type="number" class="price" min="0" step="0.01" value="${item.price}"></td>
+                    <td class="total">R$ ${(item.quantity * item.price).toFixed(2)}</td>
+                `;
+
+                tbody.appendChild(row);
             });
 
+            addEventListeners();
+            calculateTotals();
+        }
+
+        function addEventListeners() {
+            document.querySelectorAll('.purchased').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const index = this.closest('tr').dataset.index;
+                    items[index].purchased = this.checked;
+                    this.closest('tr').classList.toggle('purchased', this.checked);
+                    saveToLocalStorage();
+                });
+            });
+
+            document.querySelectorAll('.quantity, .price').forEach(input => {
+                input.addEventListener('input', function() {
+                    const row = this.closest('tr');
+                    const index = row.dataset.index;
+                    items[index][this.classList.contains('quantity') ? 'quantity' : 'price'] = parseFloat(this.value) || 0;
+                    row.querySelector('.total').textContent = `R$ ${(items[index].quantity * items[index].price).toFixed(2)}`;
+                    calculateTotals();
+                    saveToLocalStorage();
+                });
+            });
+        }
+
+        function calculateTotals() {
+            const grandTotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
             document.getElementById('grand-total').textContent = `R$ ${grandTotal.toFixed(2)}`;
         }
 
-        // Adicionar event listeners
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', calculateTotals);
-        });
+        function addNewItem() {
+            const nameInput = document.getElementById('new-item-name');
+            const name = nameInput.value.trim();
+            const category = document.getElementById('new-item-category').value;
+
+            if (name) {
+                items.push({
+                    name,
+                    category,
+                    quantity: 0,
+                    price: 0,
+                    purchased: false
+                });
+                saveToLocalStorage();
+                renderTable();
+                nameInput.value = '';
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+        }
+
+        // Inicialização
+        renderTable();
     </script>
 </body>
 </html>
