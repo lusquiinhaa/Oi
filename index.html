@@ -274,6 +274,7 @@
                 .filter(item => 
                     (currentFilter === 'Todas' || item.category === currentFilter) &&
                     item.name.toLowerCase().includes(currentSearch)
+                )
                 .sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
             let currentCategory = null;
