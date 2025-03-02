@@ -274,7 +274,6 @@
                 .filter(item => 
                     (currentFilter === 'Todas' || item.category === currentFilter) &&
                     item.name.toLowerCase().includes(currentSearch)
-                )
                 .sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
             let currentCategory = null;
@@ -350,54 +349,63 @@
 
         function generatePDF() {
             const doc = new jspdf.jsPDF();
+            
+            // Cabeçalho
             doc.setFontSize(18);
             doc.text("Lista de Compras", 15, 20);
             doc.setFontSize(10);
             doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 15, 28);
 
-            const headers = [["Item", "Quantidade", "Preço", "Total", "Comprado"]];
+            // Dados da tabela
+            const headers = [["Item", "Categoria", "Quantidade", "Preço", "Total", "Comprado"]];
             const rows = items.map(item => [
                 item.name,
+                item.category,
                 item.quantity,
                 `R$ ${item.price.toFixed(2)}`,
                 `R$ ${(item.quantity * item.price).toFixed(2)}`,
                 item.purchased ? "✓" : "✗"
             ]);
 
+            // Configuração da tabela
             doc.autoTable({
                 startY: 35,
                 head: headers,
                 body: rows,
                 theme: 'grid',
-                headStyles: { fillColor: [46, 204, 113] },
+                headStyles: { 
+                    fillColor: [46, 204, 113],
+                    textColor: [255, 255, 255],
+                    fontSize: 12
+                },
+                styles: { fontSize: 10 },
                 columnStyles: {
-                    2: { halign: 'right' },
-                    3: { halign: 'right' }
+                    3: { halign: 'right' },
+                    4: { halign: 'right' }
                 }
             });
 
+            // Total Geral
             const finalY = doc.lastAutoTable.finalY + 10;
             doc.setFontSize(12);
             doc.text(`Total Geral: ${document.getElementById('grand-total').textContent}`, 15, finalY);
 
+            // Salvar PDF
             doc.save('lista_compras.pdf');
         }
 
         function updateTotal() {
-            const total = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-            const grandTotalElement = document.getElementById('grand-total');
-            const statsTotalElement = document.getElementById('stats-total');
+            const total = items.reduce((acc, item) => {
+                return acc + (Number(item.quantity) * Number(item.price);
+            }, 0);
             
-            if(grandTotalElement) grandTotalElement.textContent = `R$ ${total.toFixed(2)}`;
-            if(statsTotalElement) statsTotalElement.textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('grand-total').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('stats-total').textContent = `R$ ${total.toFixed(2)}`;
         }
 
         function updateStats() {
-            const totalItemsElement = document.getElementById('total-items');
-            const purchasedItemsElement = document.getElementById('purchased-items');
-            
-            if(totalItemsElement) totalItemsElement.textContent = items.length;
-            if(purchasedItemsElement) purchasedItemsElement.textContent = items.filter(item => item.purchased).length;
+            document.getElementById('total-items').textContent = items.length;
+            document.getElementById('purchased-items').textContent = items.filter(item => item.purchased).length;
         }
 
         function saveAndUpdate() {
@@ -405,6 +413,7 @@
             renderItems();
         }
 
+        // Event Listeners
         document.querySelector('.dark-toggle').addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
@@ -413,6 +422,7 @@
         document.getElementById('add-button').addEventListener('click', addNewItem);
         document.getElementById('download-btn').addEventListener('click', generatePDF);
 
+        // Inicialização
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
