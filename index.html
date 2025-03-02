@@ -3,328 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista Compras Mobile</title>
+    <title>Super Lista de Compras</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #27ae60;
+            --background: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        /* [Manter estilos anteriores] */
+
+        /* Dark Mode */
+        .dark-mode {
+            --background: #2c3e50;
+            --text-color: #ecf0f1;
         }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px 0;
-            color: #1a73e8;
+            background: var(--background);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
 
         .item-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
+            background: var(--background);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .item-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .item-name {
-            flex-grow: 1;
-            font-size: 16px;
-            margin-left: 10px;
-        }
-
-        .item-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #1a73e8;
-        }
-
-        .total-section {
+        .dark-toggle {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            top: 15px;
+            right: 15px;
+            background: var(--primary-color);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
         }
 
-        .add-item-form {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .add-item-form input,
-        .add-item-form select {
+        /* Novas Features */
+        .search-bar {
             width: 100%;
             padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid var(--primary-color);
+            border-radius: 25px;
+            font-size: 16px;
         }
 
-        button {
-            background: #1a73e8;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 16px;
+        .item-actions {
+            display: flex;
+            gap: 10px;
             margin-top: 10px;
         }
 
-        .purchased {
-            opacity: 0.6;
-            background: #f8f9fa;
-        }
-        .purchased .item-name {
-            text-decoration: line-through;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 5px;
-            overflow-x: auto;
-            padding: 10px 0;
-            margin-bottom: 10px;
-        }
-
-        .filter-btn {
-            background: #e0e0e0;
-            border: none;
-            padding: 8px 12px;
+        .action-btn {
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 14px;
-            white-space: nowrap;
+            font-size: 12px;
+            cursor: pointer;
         }
 
-        .filter-btn.active {
-            background: #1a73e8;
+        .edit-btn {
+            background: #f1c40f;
+            color: #2c3e50;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
             color: white;
         }
 
-        .category-header {
-            background: #f8f9fa;
-            padding: 8px 15px;
+        .stats {
+            display: flex;
+            justify-content: space-between;
             margin: 10px 0;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #1a73e8;
+            padding: 10px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--background);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="header">🛒 Lista de Compras</h1>
+        <div class="dark-toggle">🌓</div>
         
+        <h1 class="header">🛒 Super Lista</h1>
+        
+        <input type="text" class="search-bar" placeholder="🔍 Pesquisar item..." id="search-input">
+        
+        <div class="stats">
+            <span>Itens: <span id="total-items">0</span></span>
+            <span>Comprados: <span id="purchased-items">0</span></span>
+            <span>Total: <span id="stats-total">R$ 0.00</span></span>
+        </div>
+
         <div class="filter-buttons" id="filter-buttons"></div>
         
         <div id="list-items"></div>
 
-        <div class="total-section">
-            <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                <span>Total Geral:</span>
-                <span id="grand-total">R$ 0.00</span>
+        <!-- Modal de Edição -->
+        <div class="modal" id="edit-modal">
+            <div class="modal-content">
+                <h3>Editar Item</h3>
+                <input type="text" id="edit-name">
+                <select id="edit-category">
+                    <option value="Limpeza">Limpeza</option>
+                    <option value="Higiene">Higiene</option>
+                    <option value="Mercearia">Mercearia</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <div class="item-actions">
+                    <button onclick="saveEdit()">Salvar</button>
+                    <button onclick="closeEdit()">Cancelar</button>
+                </div>
             </div>
         </div>
 
-        <div class="add-item-form">
-            <h3>➕ Novo Item</h3>
-            <input type="text" id="new-item-name" placeholder="Nome do item">
-            <select id="new-item-category">
-                <option value="Limpeza">Limpeza</option>
-                <option value="Higiene">Higiene</option>
-                <option value="Mercearia">Mercearia</option>
-                <option value="Outros">Outros</option>
-            </select>
-            <button onclick="addNewItem()">Adicionar</button>
-        </div>
+        <!-- [Manter outras seções] -->
     </div>
 
     <script>
-        const categoryOrder = ["Limpeza", "Higiene", "Mercearia", "Outros"];
-        let items = JSON.parse(localStorage.getItem('shoppingList')) || [
-            { name: "Cloro", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Desinfetante", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Sabão em pó", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Sabonete", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Shampoo", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Arroz", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Feijão", category: "Mercearia", quantity: 0, price: 0, purchased: false }
-        ];
+        // [Manter código anterior e adicionar novas funcionalidades]
 
-        let currentFilter = 'Todas';
+        // Novo: Dark Mode
+        document.querySelector('.dark-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            saveToLocalStorage();
+        });
 
-        function renderFilterButtons() {
-            const filters = ['Todas', ...categoryOrder];
-            const container = document.getElementById('filter-buttons');
-            
-            container.innerHTML = filters.map(category => `
-                <button class="filter-btn ${currentFilter === category ? 'active' : ''}" 
-                        onclick="setFilter('${category}')">
-                    ${category}
-                </button>
-            `).join('');
-        }
-
-        function setFilter(category) {
-            currentFilter = category;
-            renderFilterButtons();
+        // Novo: Sistema de Pesquisa
+        document.getElementById('search-input').addEventListener('input', function() {
+            currentSearch = this.value.toLowerCase();
             renderItems();
+        });
+
+        // Novo: Edição de Itens
+        let editingIndex = null;
+
+        function openEdit(index) {
+            editingIndex = index;
+            const item = items[index];
+            document.getElementById('edit-name').value = item.name;
+            document.getElementById('edit-category').value = item.category;
+            document.getElementById('edit-modal').style.display = 'flex';
         }
 
-        function renderItems() {
-            const container = document.getElementById('list-items');
-            container.innerHTML = '';
-            
-            const filteredItems = currentFilter === 'Todas' 
-                ? items 
-                : items.filter(item => item.category === currentFilter);
-
-            // Agrupar por categoria
-            const grouped = filteredItems.reduce((acc, item) => {
-                if (!acc[item.category]) acc[item.category] = [];
-                acc[item.category].push(item);
-                return acc;
-            }, {});
-
-            // Ordenar pelas categorias definidas
-            categoryOrder.forEach(category => {
-                if (grouped[category]) {
-                    // Adicionar header da categoria
-                    if (currentFilter === 'Todas') {
-                        container.innerHTML += `
-                            <div class="category-header">${category}</div>
-                        `;
-                    }
-                    
-                    // Adicionar itens
-                    grouped[category].forEach((item, index) => {
-                        const itemElement = document.createElement('div');
-                        itemElement.className = `item-card ${item.purchased ? 'purchased' : ''}`;
-                        itemElement.innerHTML = `
-                            <div class="item-header">
-                                <input type="checkbox" ${item.purchased ? 'checked' : ''}>
-                                <span class="item-name">${item.name}</span>
-                            </div>
-                            <div class="item-controls">
-                                <div class="input-group">
-                                    <label>Quantidade</label>
-                                    <input type="number" value="${item.quantity}" min="0" 
-                                           class="quantity" placeholder="0">
-                                </div>
-                                <div class="input-group">
-                                    <label>Preço Unitário</label>
-                                    <input type="number" value="${item.price}" min="0" step="0.01" 
-                                           class="price" placeholder="0.00">
-                                </div>
-                            </div>
-                        `;
-
-                        // Event Listeners
-                        const checkbox = itemElement.querySelector('input[type="checkbox"]');
-                        const quantityInput = itemElement.querySelector('.quantity');
-                        const priceInput = itemElement.querySelector('.price');
-                        
-                        checkbox.addEventListener('change', () => {
-                            item.purchased = checkbox.checked;
-                            itemElement.classList.toggle('purchased', checkbox.checked);
-                            saveAndUpdate();
-                        });
-                        
-                        quantityInput.addEventListener('input', () => {
-                            item.quantity = Number(quantityInput.value) || 0;
-                            saveAndUpdate();
-                        });
-                        
-                        priceInput.addEventListener('input', () => {
-                            item.price = Number(priceInput.value) || 0;
-                            saveAndUpdate();
-                        });
-
-                        container.appendChild(itemElement);
-                    });
-                }
-            });
-            
-            updateTotal();
+        function saveEdit() {
+            if (editingIndex !== null) {
+                items[editingIndex].name = document.getElementById('edit-name').value;
+                items[editingIndex].category = document.getElementById('edit-category').value;
+                saveAndUpdate();
+                closeEdit();
+            }
         }
 
-        function addNewItem() {
-            const name = document.getElementById('new-item-name').value.trim();
-            const category = document.getElementById('new-item-category').value;
-            
-            if (name) {
-                items.push({
-                    name,
-                    category,
-                    quantity: 0,
-                    price: 0,
-                    purchased: false
-                });
-                document.getElementById('new-item-name').value = '';
+        function closeEdit() {
+            document.getElementById('edit-modal').style.display = 'none';
+            editingIndex = null;
+        }
+
+        // Novo: Deletar Itens
+        function deleteItem(index) {
+            if (confirm('Deseja realmente excluir este item?')) {
+                items.splice(index, 1);
                 saveAndUpdate();
             }
         }
 
-        function updateTotal() {
-            const total = items.reduce((acc, item) => 
-                acc + (item.quantity * item.price), 0);
-            document.getElementById('grand-total').textContent = 
-                `R$ ${total.toFixed(2)}`;
+        // Novo: Estatísticas em Tempo Real
+        function updateStats() {
+            document.getElementById('total-items').textContent = items.length;
+            const purchased = items.filter(item => item.purchased).length;
+            document.getElementById('purchased-items').textContent = purchased;
         }
 
+        // Atualizar função saveAndUpdate
         function saveAndUpdate() {
             localStorage.setItem('shoppingList', JSON.stringify(items));
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
             renderItems();
+            updateStats();
         }
 
         // Inicialização
-        renderFilterButtons();
-        renderItems();
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+        updateStats();
     </script>
 </body>
 </html>
