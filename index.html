@@ -2,222 +2,226 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Compras Inteligente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Compras Mobile</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background: #f0f2f5;
+            padding: 10px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            color: #1a73e8;
+        }
+
+        .item-card {
             background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .category-header {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
+        .item-name {
+            flex-grow: 1;
+            font-size: 16px;
+            margin-left: 10px;
         }
 
-        .purchased {
-            text-decoration: line-through;
-            opacity: 0.6;
-            background-color: #f9f9f9;
+        .item-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
         }
 
         input[type="number"] {
-            width: 80px;
-            padding: 6px;
+            width: 100%;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-size: 16px;
         }
 
-        input:focus {
-            outline: 2px solid #4CAF50;
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #1a73e8;
         }
 
-        .total-row {
-            background-color: #e8f5e9;
-            font-weight: bold;
-        }
-
-        .add-item {
-            margin-top: 30px;
-            padding: 20px;
+        .total-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
 
-        .add-item input, .add-item select {
-            padding: 8px;
-            margin-right: 10px;
+        .add-item-form {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .add-item-form input,
+        .add-item-form select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
         }
 
         button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
+            background: #1a73e8;
             color: white;
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
         }
 
-        button:hover {
-            background-color: #45a049;
+        .purchased {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+        .purchased .item-name {
+            text-decoration: line-through;
         }
     </style>
 </head>
 <body>
-    <h1>Lista de Compras Inteligente</h1>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Quantidade</th>
-                <th>Valor Unitário</th>
-                <th>Total Item</th>
-            </tr>
-        </thead>
-        <tbody id="list-body">
-        </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td colspan="3">Total Geral</td>
-                <td id="grand-total">R$ 0.00</td>
-            </tr>
-        </tfoot>
-    </table>
+    <div class="container">
+        <h1 class="header">🛒 Lista de Compras</h1>
+        
+        <div id="list-items"></div>
 
-    <div class="add-item">
-        <h2>Adicionar Novo Item</h2>
-        <input type="text" id="new-item-name" placeholder="Nome do item">
-        <select id="new-item-category">
-            <option value="Limpeza">Limpeza</option>
-            <option value="Higiene">Higiene</option>
-            <option value="Mercearia">Mercearia</option>
-            <option value="Outros">Outros</option>
-        </select>
-        <button onclick="addNewItem()">Adicionar</button>
+        <div class="total-section">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>Total Geral:</span>
+                <span id="grand-total">R$ 0.00</span>
+            </div>
+        </div>
+
+        <div class="add-item-form">
+            <h3>➕ Novo Item</h3>
+            <input type="text" id="new-item-name" placeholder="Nome do item">
+            <select id="new-item-category">
+                <option value="Limpeza">Limpeza</option>
+                <option value="Higiene">Higiene</option>
+                <option value="Mercearia">Mercearia</option>
+                <option value="Outros">Outros</option>
+            </select>
+            <button onclick="addNewItem()">Adicionar</button>
+        </div>
     </div>
 
     <script>
         const categoryOrder = ["Limpeza", "Higiene", "Mercearia", "Outros"];
-        
         let items = JSON.parse(localStorage.getItem('shoppingList')) || [
-            // Limpeza
             { name: "Cloro", category: "Limpeza", quantity: 0, price: 0, purchased: false },
             { name: "Desinfetante", category: "Limpeza", quantity: 0, price: 0, purchased: false },
             { name: "Sabão em pó", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Esponja", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Papel toalha", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Veja", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            
-            // Higiene
             { name: "Sabonete", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Sabonete íntimo", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Pasta de dente", category: "Higiene", quantity: 0, price: 0, purchased: false },
             { name: "Shampoo", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Condicionador", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Desodorante", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            
-            // Mercearia
             { name: "Arroz", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Feijão", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Óleo", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Macarrão", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Molho de tomate", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Creme de leite", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Ovos", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Cebola", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Alho", category: "Mercearia", quantity: 0, price: 0, purchased: false }
+            { name: "Feijão", category: "Mercearia", quantity: 0, price: 0, purchased: false }
         ];
 
-        function renderTable() {
-            const tbody = document.getElementById('list-body');
-            tbody.innerHTML = '';
-            let currentCategory = null;
-
+        function renderItems() {
+            const container = document.getElementById('list-items');
+            container.innerHTML = '';
+            
             items.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
-
+            
             items.forEach((item, index) => {
-                if (item.category !== currentCategory) {
-                    currentCategory = item.category;
-                    tbody.innerHTML += `
-                        <tr class="category-header">
-                            <td colspan="4">${currentCategory}</td>
-                        </tr>
-                    `;
-                }
-
-                const row = document.createElement('tr');
-                row.dataset.index = index;
-                if (item.purchased) row.classList.add('purchased');
-
-                row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="purchased" ${item.purchased ? 'checked' : ''}>
-                        ${item.name}
-                    </td>
-                    <td><input type="number" class="quantity" min="0" value="${item.quantity}"></td>
-                    <td><input type="number" class="price" min="0" step="0.01" value="${item.price}"></td>
-                    <td class="total">R$ ${(item.quantity * item.price).toFixed(2)}</td>
+                const itemElement = document.createElement('div');
+                itemElement.className = `item-card ${item.purchased ? 'purchased' : ''}`;
+                itemElement.innerHTML = `
+                    <div class="item-header">
+                        <input type="checkbox" ${item.purchased ? 'checked' : ''}>
+                        <span class="item-name">${item.name}</span>
+                    </div>
+                    <div class="item-controls">
+                        <div class="input-group">
+                            <label>Quantidade</label>
+                            <input type="number" value="${item.quantity}" min="0" 
+                                   class="quantity" placeholder="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Preço Unitário</label>
+                            <input type="number" value="${item.price}" min="0" step="0.01" 
+                                   class="price" placeholder="0.00">
+                        </div>
+                    </div>
                 `;
-
-                tbody.appendChild(row);
-            });
-
-            addEventListeners();
-            calculateTotals();
-        }
-
-        function addEventListeners() {
-            document.querySelectorAll('.purchased').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const index = this.closest('tr').dataset.index;
-                    items[index].purchased = this.checked;
-                    this.closest('tr').classList.toggle('purchased', this.checked);
-                    saveToLocalStorage();
+                
+                // Event Listeners
+                const checkbox = itemElement.querySelector('input[type="checkbox"]');
+                const quantityInput = itemElement.querySelector('.quantity');
+                const priceInput = itemElement.querySelector('.price');
+                
+                checkbox.addEventListener('change', () => {
+                    item.purchased = checkbox.checked;
+                    itemElement.classList.toggle('purchased', checkbox.checked);
+                    saveAndUpdate();
                 });
-            });
-
-            document.querySelectorAll('.quantity, .price').forEach(input => {
-                input.addEventListener('input', function() {
-                    const row = this.closest('tr');
-                    const index = row.dataset.index;
-                    items[index][this.classList.contains('quantity') ? 'quantity' : 'price'] = parseFloat(this.value) || 0;
-                    row.querySelector('.total').textContent = `R$ ${(items[index].quantity * items[index].price).toFixed(2)}`;
-                    calculateTotals();
-                    saveToLocalStorage();
+                
+                quantityInput.addEventListener('input', () => {
+                    item.quantity = Number(quantityInput.value) || 0;
+                    saveAndUpdate();
                 });
+                
+                priceInput.addEventListener('input', () => {
+                    item.price = Number(priceInput.value) || 0;
+                    saveAndUpdate();
+                });
+                
+                container.appendChild(itemElement);
             });
-        }
-
-        function calculateTotals() {
-            const grandTotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            document.getElementById('grand-total').textContent = `R$ ${grandTotal.toFixed(2)}`;
+            
+            updateTotal();
         }
 
         function addNewItem() {
-            const nameInput = document.getElementById('new-item-name');
-            const name = nameInput.value.trim();
+            const name = document.getElementById('new-item-name').value.trim();
             const category = document.getElementById('new-item-category').value;
-
+            
             if (name) {
                 items.push({
                     name,
@@ -226,18 +230,25 @@
                     price: 0,
                     purchased: false
                 });
-                saveToLocalStorage();
-                renderTable();
-                nameInput.value = '';
+                document.getElementById('new-item-name').value = '';
+                saveAndUpdate();
             }
         }
 
-        function saveToLocalStorage() {
+        function updateTotal() {
+            const total = items.reduce((acc, item) => 
+                acc + (item.quantity * item.price), 0);
+            document.getElementById('grand-total').textContent = 
+                `R$ ${total.toFixed(2)}`;
+        }
+
+        function saveAndUpdate() {
             localStorage.setItem('shoppingList', JSON.stringify(items));
+            renderItems();
         }
 
         // Inicialização
-        renderTable();
+        renderItems();
     </script>
 </body>
 </html>
