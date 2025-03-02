@@ -239,7 +239,6 @@
         let currentFilter = 'Todas';
         let currentSearch = '';
 
-        // Sistema de Filtros
         function renderFilterButtons() {
             const filters = ['Todas', ...categoryOrder];
             const container = document.getElementById('filter-buttons');
@@ -257,13 +256,11 @@
             renderItems();
         }
 
-        // Sistema de Busca
         document.getElementById('search-input').addEventListener('input', function(e) {
             currentSearch = e.target.value.toLowerCase();
             renderItems();
         });
 
-        // Renderização Principal
         function renderItems() {
             const container = document.getElementById('list-items');
             container.innerHTML = '';
@@ -276,40 +273,31 @@
 
             let currentCategory = null;
             
-            filteredItems.forEach((item, index) => {
+            filteredItems.forEach((item) => {
                 if (currentFilter === 'Todas' && item.category !== currentCategory) {
                     currentCategory = item.category;
-                    container.innerHTML += `
-                        <div class="category-header">${currentCategory}</div>
-                    `;
+                    container.innerHTML += `<div class="category-header">${currentCategory}</div>`;
                 }
 
-                const itemHTML = `
-                    <div class="item-card ${item.purchased ? 'purchased' : ''}">
-                        <div class="item-header">
-                            <input type="checkbox" ${item.purchased ? 'checked' : ''}>
-                            <span class="item-name">${item.name}</span>
+                const itemElement = document.createElement('div');
+                itemElement.className = `item-card ${item.purchased ? 'purchased' : ''}`;
+                itemElement.innerHTML = `
+                    <div class="item-header">
+                        <input type="checkbox" ${item.purchased ? 'checked' : ''}>
+                        <span class="item-name">${item.name}</span>
+                    </div>
+                    <div class="item-controls">
+                        <div class="input-group">
+                            <label>Quantidade</label>
+                            <input type="number" value="${item.quantity}" class="quantity" placeholder="0">
                         </div>
-                        <div class="item-controls">
-                            <div class="input-group">
-                                <label>Quantidade</label>
-                                <input type="number" value="${item.quantity}" 
-                                       class="quantity" placeholder="0">
-                            </div>
-                            <div class="input-group">
-                                <label>Preço Unitário</label>
-                                <input type="number" value="${item.price.toFixed(2)}" 
-                                       class="price" placeholder="0.00" step="0.01">
-                            </div>
+                        <div class="input-group">
+                            <label>Preço Unitário</label>
+                            <input type="number" value="${item.price.toFixed(2)}" class="price" placeholder="0.00" step="0.01">
                         </div>
                     </div>
                 `;
 
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = itemHTML;
-                const itemElement = tempDiv.firstChild;
-
-                // Event Listeners
                 const checkbox = itemElement.querySelector('input[type="checkbox"]');
                 const quantityInput = itemElement.querySelector('.quantity');
                 const priceInput = itemElement.querySelector('.price');
@@ -337,7 +325,6 @@
             updateStats();
         }
 
-        // Funções Auxiliares
         function addNewItem() {
             const name = document.getElementById('new-item-name').value.trim();
             const category = document.getElementById('new-item-category').value;
@@ -372,16 +359,15 @@
             renderItems();
         }
 
-        // Dark Mode
         document.querySelector('.dark-toggle').addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         });
 
-        // Inicialização
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
+
         renderFilterButtons();
         renderItems();
     </script>
