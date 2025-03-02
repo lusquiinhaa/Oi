@@ -12,23 +12,148 @@
             --text-color: #2c3e50;
         }
 
-        /* [Manter estilos anteriores] */
-
-        /* Dark Mode */
-        .dark-mode {
-            --background: #2c3e50;
-            --text-color: #ecf0f1;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
+            font-family: Arial, sans-serif;
             background: var(--background);
             color: var(--text-color);
+            padding: 10px;
             transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--primary-color);
         }
 
         .item-card {
             background: var(--background);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            flex-grow: 1;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        .item-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        .total-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--background);
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .add-item-form {
+            background: var(--background);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .purchased {
+            opacity: 0.6;
+            background: #f8f9fa;
+        }
+        .purchased .item-name {
+            text-decoration: line-through;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .filter-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .category-header {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         .dark-toggle {
@@ -41,7 +166,6 @@
             cursor: pointer;
         }
 
-        /* Novas Features */
         .search-bar {
             width: 100%;
             padding: 12px;
@@ -49,29 +173,6 @@
             border: 2px solid var(--primary-color);
             border-radius: 25px;
             font-size: 16px;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .action-btn {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .edit-btn {
-            background: #f1c40f;
-            color: #2c3e50;
-        }
-
-        .delete-btn {
-            background: #e74c3c;
-            color: white;
         }
 
         .stats {
@@ -82,26 +183,7 @@
             background: var(--primary-color);
             color: white;
             border-radius: 10px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: var(--background);
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -123,95 +205,185 @@
         
         <div id="list-items"></div>
 
-        <!-- Modal de Edição -->
-        <div class="modal" id="edit-modal">
-            <div class="modal-content">
-                <h3>Editar Item</h3>
-                <input type="text" id="edit-name">
-                <select id="edit-category">
-                    <option value="Limpeza">Limpeza</option>
-                    <option value="Higiene">Higiene</option>
-                    <option value="Mercearia">Mercearia</option>
-                    <option value="Outros">Outros</option>
-                </select>
-                <div class="item-actions">
-                    <button onclick="saveEdit()">Salvar</button>
-                    <button onclick="closeEdit()">Cancelar</button>
-                </div>
+        <div class="total-section">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>Total Geral:</span>
+                <span id="grand-total">R$ 0.00</span>
             </div>
         </div>
 
-        <!-- [Manter outras seções] -->
+        <div class="add-item-form">
+            <h3>➕ Novo Item</h3>
+            <input type="text" id="new-item-name" placeholder="Nome do item">
+            <select id="new-item-category">
+                <option value="Limpeza">Limpeza</option>
+                <option value="Higiene">Higiene</option>
+                <option value="Mercearia">Mercearia</option>
+                <option value="Outros">Outros</option>
+            </select>
+            <button onclick="addNewItem()">Adicionar</button>
+        </div>
     </div>
 
     <script>
-        // [Manter código anterior e adicionar novas funcionalidades]
+        const categoryOrder = ["Limpeza", "Higiene", "Mercearia", "Outros"];
+        let items = JSON.parse(localStorage.getItem('shoppingList')) || [
+            { name: "Cloro", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Desinfetante", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Sabão em Pó", category: "Limpeza", quantity: 0, price: 0, purchased: false },
+            { name: "Sabonete", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Shampoo", category: "Higiene", quantity: 0, price: 0, purchased: false },
+            { name: "Arroz", category: "Mercearia", quantity: 0, price: 0, purchased: false }
+        ];
 
-        // Novo: Dark Mode
-        document.querySelector('.dark-toggle').addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            saveToLocalStorage();
-        });
+        let currentFilter = 'Todas';
+        let currentSearch = '';
 
-        // Novo: Sistema de Pesquisa
-        document.getElementById('search-input').addEventListener('input', function() {
-            currentSearch = this.value.toLowerCase();
+        // Sistema de Filtros
+        function renderFilterButtons() {
+            const filters = ['Todas', ...categoryOrder];
+            const container = document.getElementById('filter-buttons');
+            container.innerHTML = filters.map(category => `
+                <button class="filter-btn ${currentFilter === category ? 'active' : ''}" 
+                        onclick="setFilter('${category}')">
+                    ${category}
+                </button>
+            `).join('');
+        }
+
+        function setFilter(category) {
+            currentFilter = category;
+            renderFilterButtons();
+            renderItems();
+        }
+
+        // Sistema de Busca
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            currentSearch = e.target.value.toLowerCase();
             renderItems();
         });
 
-        // Novo: Edição de Itens
-        let editingIndex = null;
+        // Renderização Principal
+        function renderItems() {
+            const container = document.getElementById('list-items');
+            container.innerHTML = '';
 
-        function openEdit(index) {
-            editingIndex = index;
-            const item = items[index];
-            document.getElementById('edit-name').value = item.name;
-            document.getElementById('edit-category').value = item.category;
-            document.getElementById('edit-modal').style.display = 'flex';
-        }
+            const filteredItems = items
+                .filter(item => 
+                    (currentFilter === 'Todas' || item.category === currentFilter) &&
+                    item.name.toLowerCase().includes(currentSearch)
+                .sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
-        function saveEdit() {
-            if (editingIndex !== null) {
-                items[editingIndex].name = document.getElementById('edit-name').value;
-                items[editingIndex].category = document.getElementById('edit-category').value;
-                saveAndUpdate();
-                closeEdit();
-            }
-        }
+            let currentCategory = null;
+            
+            filteredItems.forEach((item, index) => {
+                if (currentFilter === 'Todas' && item.category !== currentCategory) {
+                    currentCategory = item.category;
+                    container.innerHTML += `
+                        <div class="category-header">${currentCategory}</div>
+                    `;
+                }
 
-        function closeEdit() {
-            document.getElementById('edit-modal').style.display = 'none';
-            editingIndex = null;
-        }
+                const itemHTML = `
+                    <div class="item-card ${item.purchased ? 'purchased' : ''}">
+                        <div class="item-header">
+                            <input type="checkbox" ${item.purchased ? 'checked' : ''}>
+                            <span class="item-name">${item.name}</span>
+                        </div>
+                        <div class="item-controls">
+                            <div class="input-group">
+                                <label>Quantidade</label>
+                                <input type="number" value="${item.quantity}" 
+                                       class="quantity" placeholder="0">
+                            </div>
+                            <div class="input-group">
+                                <label>Preço Unitário</label>
+                                <input type="number" value="${item.price.toFixed(2)}" 
+                                       class="price" placeholder="0.00" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-        // Novo: Deletar Itens
-        function deleteItem(index) {
-            if (confirm('Deseja realmente excluir este item?')) {
-                items.splice(index, 1);
-                saveAndUpdate();
-            }
-        }
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = itemHTML;
+                const itemElement = tempDiv.firstChild;
 
-        // Novo: Estatísticas em Tempo Real
-        function updateStats() {
-            document.getElementById('total-items').textContent = items.length;
-            const purchased = items.filter(item => item.purchased).length;
-            document.getElementById('purchased-items').textContent = purchased;
-        }
+                // Event Listeners
+                const checkbox = itemElement.querySelector('input[type="checkbox"]');
+                const quantityInput = itemElement.querySelector('.quantity');
+                const priceInput = itemElement.querySelector('.price');
 
-        // Atualizar função saveAndUpdate
-        function saveAndUpdate() {
-            localStorage.setItem('shoppingList', JSON.stringify(items));
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-            renderItems();
+                checkbox.addEventListener('change', () => {
+                    item.purchased = checkbox.checked;
+                    itemElement.classList.toggle('purchased', checkbox.checked);
+                    saveAndUpdate();
+                });
+
+                quantityInput.addEventListener('input', () => {
+                    item.quantity = Number(quantityInput.value) || 0;
+                    saveAndUpdate();
+                });
+
+                priceInput.addEventListener('input', () => {
+                    item.price = Number(priceInput.value) || 0;
+                    saveAndUpdate();
+                });
+
+                container.appendChild(itemElement);
+            });
+
+            updateTotal();
             updateStats();
         }
+
+        // Funções Auxiliares
+        function addNewItem() {
+            const name = document.getElementById('new-item-name').value.trim();
+            const category = document.getElementById('new-item-category').value;
+
+            if (name) {
+                items.push({
+                    name,
+                    category,
+                    quantity: 0,
+                    price: 0,
+                    purchased: false
+                });
+                document.getElementById('new-item-name').value = '';
+                saveAndUpdate();
+            }
+        }
+
+        function updateTotal() {
+            const total = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+            document.getElementById('grand-total').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('stats-total').textContent = `R$ ${total.toFixed(2)}`;
+        }
+
+        function updateStats() {
+            document.getElementById('total-items').textContent = items.length;
+            const purchasedCount = items.filter(item => item.purchased).length;
+            document.getElementById('purchased-items').textContent = purchasedCount;
+        }
+
+        function saveAndUpdate() {
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+            renderItems();
+        }
+
+        // Dark Mode
+        document.querySelector('.dark-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        });
 
         // Inicialização
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
         }
-        updateStats();
+        renderFilterButtons();
+        renderItems();
     </script>
 </body>
 </html>
