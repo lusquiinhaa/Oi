@@ -5,123 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista Compras Mobile</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px 0;
-            color: #1a73e8;
-        }
-
-        .item-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .item-header {
+        /* [Manter os estilos anteriores] */
+        
+        .filter-buttons {
             display: flex;
-            align-items: center;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 10px 0;
             margin-bottom: 10px;
         }
 
-        .item-name {
-            flex-grow: 1;
-            font-size: 16px;
-            margin-left: 10px;
+        .filter-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
         }
 
-        .item-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #1a73e8;
-        }
-
-        .total-section {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-
-        .add-item-form {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .add-item-form input,
-        .add-item-form select {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        button {
+        .filter-btn.active {
             background: #1a73e8;
             color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 16px;
-            margin-top: 10px;
         }
 
-        .purchased {
-            opacity: 0.6;
+        .category-header {
             background: #f8f9fa;
-        }
-        .purchased .item-name {
-            text-decoration: line-through;
+            padding: 8px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #1a73e8;
         }
     </style>
 </head>
@@ -129,125 +43,75 @@
     <div class="container">
         <h1 class="header">🛒 Lista de Compras</h1>
         
+        <div class="filter-buttons" id="filter-buttons"></div>
+        
         <div id="list-items"></div>
 
-        <div class="total-section">
-            <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                <span>Total Geral:</span>
-                <span id="grand-total">R$ 0.00</span>
-            </div>
-        </div>
-
-        <div class="add-item-form">
-            <h3>➕ Novo Item</h3>
-            <input type="text" id="new-item-name" placeholder="Nome do item">
-            <select id="new-item-category">
-                <option value="Limpeza">Limpeza</option>
-                <option value="Higiene">Higiene</option>
-                <option value="Mercearia">Mercearia</option>
-                <option value="Outros">Outros</option>
-            </select>
-            <button onclick="addNewItem()">Adicionar</button>
-        </div>
+        <!-- [Manter o restante do HTML anterior] -->
     </div>
 
     <script>
-        const categoryOrder = ["Limpeza", "Higiene", "Mercearia", "Outros"];
-        let items = JSON.parse(localStorage.getItem('shoppingList')) || [
-            { name: "Cloro", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Desinfetante", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Sabão em pó", category: "Limpeza", quantity: 0, price: 0, purchased: false },
-            { name: "Sabonete", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Shampoo", category: "Higiene", quantity: 0, price: 0, purchased: false },
-            { name: "Arroz", category: "Mercearia", quantity: 0, price: 0, purchased: false },
-            { name: "Feijão", category: "Mercearia", quantity: 0, price: 0, purchased: false }
-        ];
+        // [Manter a inicialização dos itens e outras funções]
+
+        let currentFilter = 'Todas';
+
+        function renderFilterButtons() {
+            const filters = ['Todas', ...categoryOrder];
+            const container = document.getElementById('filter-buttons');
+            
+            container.innerHTML = filters.map(category => `
+                <button class="filter-btn ${currentFilter === category ? 'active' : ''}" 
+                        onclick="setFilter('${category}')">
+                    ${category}
+                </button>
+            `).join('');
+        }
+
+        function setFilter(category) {
+            currentFilter = category;
+            renderFilterButtons();
+            renderItems();
+        }
 
         function renderItems() {
             const container = document.getElementById('list-items');
             container.innerHTML = '';
             
-            items.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
-            
-            items.forEach((item, index) => {
-                const itemElement = document.createElement('div');
-                itemElement.className = `item-card ${item.purchased ? 'purchased' : ''}`;
-                itemElement.innerHTML = `
-                    <div class="item-header">
-                        <input type="checkbox" ${item.purchased ? 'checked' : ''}>
-                        <span class="item-name">${item.name}</span>
-                    </div>
-                    <div class="item-controls">
-                        <div class="input-group">
-                            <label>Quantidade</label>
-                            <input type="number" value="${item.quantity}" min="0" 
-                                   class="quantity" placeholder="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Preço Unitário</label>
-                            <input type="number" value="${item.price}" min="0" step="0.01" 
-                                   class="price" placeholder="0.00">
-                        </div>
-                    </div>
-                `;
-                
-                // Event Listeners
-                const checkbox = itemElement.querySelector('input[type="checkbox"]');
-                const quantityInput = itemElement.querySelector('.quantity');
-                const priceInput = itemElement.querySelector('.price');
-                
-                checkbox.addEventListener('change', () => {
-                    item.purchased = checkbox.checked;
-                    itemElement.classList.toggle('purchased', checkbox.checked);
-                    saveAndUpdate();
-                });
-                
-                quantityInput.addEventListener('input', () => {
-                    item.quantity = Number(quantityInput.value) || 0;
-                    saveAndUpdate();
-                });
-                
-                priceInput.addEventListener('input', () => {
-                    item.price = Number(priceInput.value) || 0;
-                    saveAndUpdate();
-                });
-                
-                container.appendChild(itemElement);
-            });
+            const filteredItems = currentFilter === 'Todas' 
+                ? items 
+                : items.filter(item => item.category === currentFilter);
+
+            // Agrupar por categoria
+            const grouped = filteredItems.reduce((acc, item) => {
+                if (!acc[item.category]) acc[item.category] = [];
+                acc[item.category].push(item);
+                return acc;
+            }, {});
+
+            // Ordenar pelas categorias definidas
+            for (const category of categoryOrder) {
+                if (grouped[category]) {
+                    // Adicionar header da categoria
+                    if (currentFilter === 'Todas') {
+                        container.innerHTML += `
+                            <div class="category-header">${category}</div>
+                        `;
+                    }
+                    
+                    // Adicionar itens
+                    grouped[category].forEach((item, index) => {
+                        // [Manter a criação dos cards de item]
+                    });
+                }
+            }
             
             updateTotal();
         }
 
-        function addNewItem() {
-            const name = document.getElementById('new-item-name').value.trim();
-            const category = document.getElementById('new-item-category').value;
-            
-            if (name) {
-                items.push({
-                    name,
-                    category,
-                    quantity: 0,
-                    price: 0,
-                    purchased: false
-                });
-                document.getElementById('new-item-name').value = '';
-                saveAndUpdate();
-            }
-        }
+        // [Manter as outras funções]
 
-        function updateTotal() {
-            const total = items.reduce((acc, item) => 
-                acc + (item.quantity * item.price), 0);
-            document.getElementById('grand-total').textContent = 
-                `R$ ${total.toFixed(2)}`;
-        }
-
-        function saveAndUpdate() {
-            localStorage.setItem('shoppingList', JSON.stringify(items));
-            renderItems();
-        }
-
-        // Inicialização
+        // Na inicialização
+        renderFilterButtons();
         renderItems();
     </script>
 </body>
