@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Lista de Compras</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #2ecc71;
@@ -178,6 +179,7 @@
         .stats {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin: 10px 0;
             padding: 10px;
             background: var(--primary-color);
@@ -196,9 +198,11 @@
         <input type="text" class="search-bar" placeholder="🔍 Pesquisar item..." id="search-input">
         
         <div class="stats">
-            <span>Itens: <span id="total-items">0</span></span>
-            <span>Comprados: <span id="purchased-items">0</span></span>
-            <span>Total: <span id="stats-total">R$ 0.00</span></span>
+            <div>
+                <span>Itens: <span id="total-items">0</span></span>
+                <span style="margin-left: 15px;">Comprados: <span id="purchased-items">0</span></span>
+            </div>
+            <button id="download-btn">📄 PDF</button>
         </div>
 
         <div class="filter-buttons" id="filter-buttons"></div>
@@ -343,6 +347,41 @@
             }
         }
 
+        function generatePDF() {
+            const doc = new jspdf.jsPDF();
+            doc.setFontSize(18);
+            doc.text("Lista de Compras", 15, 20);
+            doc.setFontSize(10);
+            doc.text(`Gerado em: ${new Date().toLocaleDateString()}`, 15, 28);
+
+            const headers = [["Item", "Quantidade", "Preço", "Total", "Comprado"]];
+            const rows = items.map(item => [
+                item.name,
+                item.quantity,
+                `R$ ${item.price.toFixed(2)}`,
+                `R$ ${(item.quantity * item.price).toFixed(2)}`,
+                item.purchased ? "✓" : "✗"
+            ]);
+
+            doc.autoTable({
+                startY: 35,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [46, 204, 113] },
+                columnStyles: {
+                    2: { halign: 'right' },
+                    3: { halign: 'right' }
+                }
+            });
+
+            const finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(12);
+            doc.text(`Total Geral: ${document.getElementById('grand-total').textContent}`, 15, finalY);
+
+            doc.save('lista_compras.pdf');
+        }
+
         function updateTotal() {
             const total = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
             document.getElementById('grand-total').textContent = `R$ ${total.toFixed(2)}`;
@@ -366,6 +405,7 @@
         });
 
         document.getElementById('add-button').addEventListener('click', addNewItem);
+        document.getElementById('download-btn').addEventListener('click', generatePDF);
 
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
